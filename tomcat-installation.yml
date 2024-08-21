@@ -1,19 +1,17 @@
 ---
-- hosts: test
+- hosts: localhost
 
   become: yes
   become_method: sudo
-  remote_user: ubuntu
+  
 
   tasks:
   - name: Update and upgrade apt packages
-    apt:
-      upgrade: yes
-      update_cache: yes
+    shell: "yum update -y"    # yum install code can be taken from ansible documentation
 
-  - name: install JDK 11
-    apt:
-      name: openjdk-11-jdk
+  - name: install JDK 1.8.0
+    yum:
+      name: java-1.8.0
       state: present
 
   - name: add tomcat group
@@ -35,7 +33,7 @@
 
   - name: download & unarchive
     unarchive:
-      src: http://apache.cs.utah.edu/tomcat/tomcat-9/v9.0.56/bin/apache-tomcat-9.0.56.tar.gz
+      src: http://apache.cs.utah.edu/tomcat/tomcat-9/v9.0.93/bin/apache-tomcat-9.0.93.tar.gz     # as per aug month need to check for version
       dest: /opt/tomcat
       remote_src: yes
       extra_opts: [--strip-components=1]
@@ -54,6 +52,9 @@
        src: tomcat.service
        dest: /etc/systemd/system/
        mode: 0755
+
+  - name: reload the daemon            # if we want to restart we need do daemon reload
+    shell: "systemctl daemon-reload" 
 
   - name: Start and enable Tomcat service
     systemd:
